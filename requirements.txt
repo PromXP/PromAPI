@@ -1,3 +1,4 @@
+Cython==3.0.8
 attr==0.3.2
 colorama==0.4.6
 ConfigParser==7.2.0
