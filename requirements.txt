@@ -18,7 +18,8 @@ Pillow==11.1.0
 protobuf==6.30.2
 pydantic==2.11.2
 pyOpenSSL==25.0.0
-pywin32==310
+pymongo==4.5.0
+pywin32==306
 railroad==0.5.0
 redis==5.2.1
 Sphinx==8.2.3
