@@ -5,6 +5,7 @@ cryptography==41.0.4
 Cython==3.0.8
 dl==0.1.0
 docutils==0.21.2
+email-validator==2.0.0.post2
 fastapi==0.115.12
 filelock==3.8.0
 HTMLParser==0.0.2
