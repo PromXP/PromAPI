@@ -2,7 +2,6 @@ attr==0.3.2
 colorama==0.4.6
 ConfigParser==7.2.0
 cryptography==41.0.4
-Cython==3.0.8
 dl==0.1.0
 docutils==0.21.2
 fastapi==0.115.12
