@@ -7,11 +7,18 @@ class GoogleLoginRequest(BaseModel):
     email: EmailStr
     role: Literal["patient", "doctor", "admin"]
 
+class LoginRequest(BaseModel):
+    identifier: str  # email OR uhid OR phone number
+    password: str
+    role: str  # "admin", "doctor", "patient"
+
 class Doctor(BaseModel):
     doctor_name: str
     gender: Literal["male", "female", "other"]
     age: int
     email: EmailStr
+    uhid : str
+    phone_number : str
     password: str
     admin_created: str
     patients_assigned: List[str] = []
@@ -22,7 +29,9 @@ class Doctor(BaseModel):
                 "doctor_name": "Dr. John Smith",
                 "gender": "male",
                 "age": 45,
+                "uhid" : "UH123456",
                 "admin_created": "APM",
+                "phone_number": "1234567890",
                 "email": "dr.john@example.com",
                 "password": "securePass123",
                 "patients_assigned": ["patient_id_1", "patient_id_2"]
@@ -34,6 +43,8 @@ class Admin(BaseModel):
     gender: Literal["male", "female", "other"]
     age: int
     password: str
+    uhid : str
+    phone_number : str
     email: EmailStr
     doctors_created: List[str] = []
     patients_created: List[str] = []
@@ -44,6 +55,7 @@ class Admin(BaseModel):
                 "admin_name": "Alice Admin",
                 "gender": "female",
                 "age": 35,
+                "phone_number": "1234567890",
                 "password": "adminSecure@456",
                 "email": "alice.admin@example.com",
                 "doctors_created": ["doctor1", "doctor2"],

@@ -1,7 +1,7 @@
 from fastapi import  Body, FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from db import admin_lobby,doctor_lobby, fix_mongo_id, patient_data,notification_data
-from models import Admin, Doctor, DoctorAssignRequest, GoogleLoginRequest, MarkReadRequest, Notification, Patient, PostSurgeryDetailsUpdateRequest, QuestionnaireAppendRequest, QuestionnaireScoreAppendRequest, SurgeryScheduleUpdateRequest
+from models import Admin, Doctor, DoctorAssignRequest, GoogleLoginRequest, LoginRequest, MarkReadRequest, Notification, Patient, PostSurgeryDetailsUpdateRequest, QuestionnaireAppendRequest, QuestionnaireScoreAppendRequest, SurgeryScheduleUpdateRequest
 from datetime import date, datetime
 
 app = FastAPI()
@@ -91,7 +91,7 @@ async def register_patient(patient: Patient):
     # Update Admin and Doctor records
     await admin_lobby.update_one(
         {"email": patient.admin_assigned},
-        {"$push": {"patients_created": patient.uhid}}
+        {"$push": {"patients_created": patient.email}}
     )
 
     return {
@@ -261,3 +261,36 @@ async def google_login(data: GoogleLoginRequest):
         return {"role": "patient", "data": fix_mongo_id(patient)}
 
     raise HTTPException(status_code=400, detail="Invalid role")
+
+@app.post("/login")
+async def login_user(request: LoginRequest):
+    # Choose the collection based on role
+    collection = {
+        "admin": admin_lobby,
+        "doctor": doctor_lobby,
+        "patient": patient_data
+    }.get(request.role)
+
+    if collection is None:
+        raise HTTPException(status_code=400, detail="Invalid role")
+
+    # Look for the user by email, uhid, or phone_number
+    user = await collection.find_one({
+        "$or": [
+            {"email": request.identifier},
+            {"uhid": request.identifier},
+            {"phone_number": request.identifier}
+        ]
+    })
+
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    if user["password"] != request.password:
+        raise HTTPException(status_code=401, detail="Invalid password")
+
+    # Remove password before returning the user
+    user.pop("password", None)
+    user["_id"] = str(user["_id"])  # convert ObjectId to str
+
+    return {"message": "Login successful", "user": user}
