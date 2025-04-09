@@ -299,3 +299,8 @@ async def login_user(request: LoginRequest):
 @app.on_event("startup")
 async def startup_event():
     asyncio.create_task(keep_server_alive())
+
+@app.get("/")
+def read_root():
+    return {"status": "alive"}
+
