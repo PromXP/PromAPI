@@ -1,8 +1,9 @@
 from fastapi import  Body, FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-from db import admin_lobby,doctor_lobby, fix_mongo_id, patient_data,notification_data
+from db import admin_lobby,doctor_lobby, fix_mongo_id, keep_server_alive, patient_data,notification_data
 from models import Admin, Doctor, DoctorAssignRequest, GoogleLoginRequest, LoginRequest, MarkReadRequest, Notification, Patient, PostSurgeryDetailsUpdateRequest, QuestionnaireAppendRequest, QuestionnaireScoreAppendRequest, SurgeryScheduleUpdateRequest
 from datetime import date, datetime
+import asyncio
 
 app = FastAPI()
 
@@ -294,3 +295,7 @@ async def login_user(request: LoginRequest):
     user["_id"] = str(user["_id"])  # convert ObjectId to str
 
     return {"message": "Login successful", "user": user}
+
+@app.on_event("startup")
+async def startup_event():
+    asyncio.create_task(keep_server_alive())

@@ -1,4 +1,6 @@
 from motor import motor_asyncio
+import logging
+import asyncio
 
 # MongoDB setup
 client = motor_asyncio.AsyncIOMotorClient("mongodb+srv://admpromxp:admpromxp@promcluster.w2kxjjn.mongodb.net/?retryWrites=true&w=majority&appName=promcluster")
@@ -13,3 +15,9 @@ def fix_mongo_id(document):
         return document
     document["_id"] = str(document["_id"])
     return document
+
+
+async def keep_server_alive():
+    while True:
+        logging.info("🔁 Tick: Server is alive.")
+        await asyncio.sleep(105)  # 1 minute 45 seconds = 105 seconds
