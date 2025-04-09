@@ -63,6 +63,12 @@ class Admin(BaseModel):
             }
         }
 
+class QuestionnaireUpdateRequest(BaseModel):
+    uhid: str
+    name: str
+    period: str
+    completed: int = 1  # Default is 1 (completed)
+
 class QuestionnaireAssigned(BaseModel):
     name: str
     period: str
@@ -72,6 +78,7 @@ class QuestionnaireAssigned(BaseModel):
 class QuestionnaireScore(BaseModel):
     name: str
     score: float
+    period: str
     timestamp: datetime
 
 class SurgeryScheduled(BaseModel):
@@ -106,7 +113,7 @@ class Patient(BaseModel):
     questionnaire_scores: Optional[List[QuestionnaireScore]] = []
     surgery_scheduled: Optional[SurgeryScheduled] = None
     post_surgery_details: Optional[PostSurgeryDetails] = None
-    current_status: Literal["pre_op", "post_op"]
+    current_status: str
 
     class Config:
         schema_extra = {
@@ -144,11 +151,13 @@ class Patient(BaseModel):
                     {
                         "name": "Mobility Survey",
                         "score": 85.5,
+                        "period": "weekly",
                         "timestamp": "2025-04-01T10:30:00"
                     },
                     {
                         "name": "Pain Assessment",
                         "score": 92.0,
+                        "period": "weekly",
                         "timestamp": "2025-04-02T08:30:00"
                     }
                 ],

@@ -21,3 +21,23 @@ async def keep_server_alive():
     while True:
         logging.info("🔁 Tick: Server is alive.")
         await asyncio.sleep(105)  # 1 minute 45 seconds = 105 seconds
+
+def update_questionnaire_completion(uhid: str, name: str, period: str, completed: int = 1):
+    filter_query = {
+        "uhid": uhid,
+        "questionnaire_assigned": {
+            "$elemMatch": {
+                "name": name,
+                "period": period
+            }
+        }
+    }
+
+    update_query = {
+        "$set": {
+            "questionnaire_assigned.$.completed": completed
+        }
+    }
+
+    result = patient_data.update_one(filter_query, update_query)
+    return result

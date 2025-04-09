@@ -1,8 +1,8 @@
 from typing import List
 from fastapi import  Body, FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-from db import admin_lobby,doctor_lobby, fix_mongo_id, keep_server_alive, patient_data,notification_data
-from models import Admin, Doctor, DoctorAssignRequest, GoogleLoginRequest, LoginRequest, MarkReadRequest, Notification, Patient, PostSurgeryDetailsUpdateRequest, QuestionnaireAppendRequest, QuestionnaireScoreAppendRequest, SurgeryScheduleUpdateRequest
+from db import admin_lobby,doctor_lobby, fix_mongo_id, keep_server_alive, patient_data,notification_data, update_questionnaire_completion
+from models import Admin, Doctor, DoctorAssignRequest, GoogleLoginRequest, LoginRequest, MarkReadRequest, Notification, Patient, PostSurgeryDetailsUpdateRequest, QuestionnaireAppendRequest, QuestionnaireScoreAppendRequest, QuestionnaireUpdateRequest, SurgeryScheduleUpdateRequest
 from datetime import date, datetime
 import asyncio
 
@@ -316,6 +316,22 @@ async def get_doctors_by_admin(admin_email: str):
         raise HTTPException(status_code=404, detail="No doctors found for this admin")
 
     return doctors
+
+@app.put("/update-questionnaire-status")
+async def update_questionnaire_status(data: QuestionnaireUpdateRequest):
+    result = await update_questionnaire_completion(
+    uhid=data.uhid,
+    name=data.name,
+    period=data.period,
+    completed=data.completed
+)
+
+
+    if result.modified_count == 0:
+        raise HTTPException(status_code=404, detail="Questionnaire not found or already completed.")
+    
+    return {"message": "Questionnaire status updated successfully."}
+
 
 @app.on_event("startup")
 async def startup_event():
