@@ -1,3 +1,4 @@
+from typing import List
 from fastapi import  Body, FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from db import admin_lobby,doctor_lobby, fix_mongo_id, keep_server_alive, patient_data,notification_data
@@ -295,6 +296,26 @@ async def login_user(request: LoginRequest):
     user["_id"] = str(user["_id"])  # convert ObjectId to str
 
     return {"message": "Login successful", "user": user}
+
+@app.get("/patients/by-admin/{admin_email}", response_model=List[Patient])
+async def get_patients_by_admin(admin_email: str):
+    patients_cursor = patient_data.find({"admin_assigned": admin_email})
+    patients = await patients_cursor.to_list(length=None)
+
+    if not patients:
+        raise HTTPException(status_code=404, detail="No patients found for this admin")
+
+    return patients
+
+@app.get("/doctors/by-admin/{admin_email}", response_model=List[Doctor])
+async def get_doctors_by_admin(admin_email: str):
+    doctors_cursor = doctor_lobby.find({"admin_created": admin_email})
+    doctors = await doctors_cursor.to_list(length=None)
+
+    if not doctors:
+        raise HTTPException(status_code=404, detail="No doctors found for this admin")
+
+    return doctors
 
 @app.on_event("startup")
 async def startup_event():
