@@ -88,7 +88,7 @@ class SurgeryScheduled(BaseModel):
 class PostSurgeryDetails(BaseModel):
     date_of_surgery: date
     surgeon: str
-    surgeon_name: str
+    surgery_name: str
     procedure: str
     implant: str
     technology: str
@@ -168,8 +168,8 @@ class Patient(BaseModel):
                 "post_surgery_details": {
                     "date_of_surgery": "2025-05-10",
                     "surgeon": "Dr. Strange",
-                    "surgeon_name": "Stephen Strange",
-                    "procedure": "Knee Replacement",
+                    "surgery_name": "knee replacement",
+                    "procedure": "Knee Replacement is a part of leg helping",
                     "implant": "Titanium",
                     "technology": "Robotic Assisted"
                 },
