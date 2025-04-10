@@ -77,10 +77,12 @@ async def register_patient(patient: Patient):
     # Convert patient dict and ensure all dates are Mongo-friendly
     patient_dict = patient.dict()
 
+    # Set the admin_name from the Admin record
+    patient_dict["admin_name"] = admin["admin_name"]
+
     # Convert `date_of_surgery` if it exists
     if patient_dict.get("post_surgery_details") and patient_dict["post_surgery_details"].get("date_of_surgery"):
         dos = patient_dict["post_surgery_details"]["date_of_surgery"]
-        # Convert date to datetime
         patient_dict["post_surgery_details"]["date_of_surgery"] = datetime.combine(dos, datetime.min.time())
 
     # Convert timestamps in questionnaire_scores
@@ -90,7 +92,7 @@ async def register_patient(patient: Patient):
 
     result = await patient_data.insert_one(patient_dict)
 
-    # Update Admin and Doctor records
+    # Update Admin's patients_created list
     await admin_lobby.update_one(
         {"email": patient.admin_assigned},
         {"$push": {"patients_created": patient.email}}
@@ -100,6 +102,7 @@ async def register_patient(patient: Patient):
         "message": "Patient registered successfully.",
         "patient_id": str(result.inserted_id)
     }
+
 
 @app.post("/add-notification")
 async def add_notification(notification: Notification):
@@ -157,19 +160,32 @@ async def mark_notification_as_read(
 
 @app.put("/update-doctor")
 async def update_doctor_assignment(data: DoctorAssignRequest):
+    # Validate patient exists
     patient = await patient_data.find_one({"uhid": data.uhid})
     if not patient:
         raise HTTPException(status_code=404, detail="Invalid UHID")
 
+    # Validate doctor exists
+    doctor = await doctor_lobby.find_one({"email": data.doctor_assigned})
+    if not doctor:
+        raise HTTPException(status_code=404, detail="Doctor not found")
+
+    # Perform update
     result = await patient_data.update_one(
         {"uhid": data.uhid},
-        {"$set": {"doctor_assigned": data.doctor_assigned}}
+        {
+            "$set": {
+                "doctor_assigned": data.doctor_assigned,
+                "doctor_name": doctor["doctor_name"]
+            }
+        }
     )
 
     if result.modified_count:
         return {"message": "Doctor updated successfully"}
     else:
         return {"message": "No update performed. Doctor might already be assigned to this value."}
+
     
 @app.put("/add-questionnaire")
 async def add_questionnaire(data: QuestionnaireAppendRequest):
