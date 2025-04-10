@@ -334,6 +334,16 @@ async def get_doctors_by_admin(admin_email: str):
 
     return doctors
 
+@app.get("/patients/by-doctor/{doctor_email}", response_model=List[Patient])
+async def get_patients_by_doctor(doctor_email: str):
+    patients_cursor = patient_data.find({"doctor_assigned": doctor_email})
+    patients = await patients_cursor.to_list(length=None)
+
+    if not patients:
+        raise HTTPException(status_code=404, detail="No patients found for this admin")
+
+    return patients
+
 @app.put("/update-questionnaire-status")
 async def update_questionnaire_status(data: QuestionnaireUpdateRequest):
     result = await update_questionnaire_completion(
