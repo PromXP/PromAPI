@@ -2,7 +2,7 @@ from typing import List
 from fastapi import  Body, FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from db import admin_lobby,doctor_lobby, fix_mongo_id, keep_server_alive, patient_data,notification_data, update_questionnaire_completion
-from models import Admin, Doctor, DoctorAssignRequest, GoogleLoginRequest, LoginRequest, MarkReadRequest, Notification, Patient, PostSurgeryDetailsUpdateRequest, QuestionnaireAppendRequest, QuestionnaireScoreAppendRequest, QuestionnaireUpdateRequest, SurgeryScheduleUpdateRequest
+from models import Admin, Doctor, DoctorAssignRequest, GoogleLoginRequest, LoginRequest, MarkReadRequest, Notification, PasswordResetRequest, Patient, PostSurgeryDetailsUpdateRequest, QuestionnaireAppendRequest, QuestionnaireScoreAppendRequest, QuestionnaireUpdateRequest, SurgeryScheduleUpdateRequest
 from datetime import date, datetime
 import asyncio
 
@@ -332,6 +332,19 @@ async def update_questionnaire_status(data: QuestionnaireUpdateRequest):
         raise HTTPException(status_code=404, detail="Questionnaire not found or already completed.")
     
     return {"message": "Questionnaire status updated successfully."}
+
+@app.put("/patients/reset-password")
+async def reset_password(data: PasswordResetRequest):
+    patient = await patient_data.find_one({"uhid": data.uhid})  # adjust for your DB
+    if not patient:
+        raise HTTPException(status_code=404, detail="Patient not found")
+
+    # Optionally, hash the password here
+    await patient_data.update_one(
+        {"uhid": data.uhid},
+        {"$set": {"password": data.new_password}}
+    )
+    return {"message": "Password updated successfully"}
 
 
 @app.on_event("startup")

@@ -229,3 +229,7 @@ class SurgeryScheduleUpdateRequest(BaseModel):
 class PostSurgeryDetailsUpdateRequest(BaseModel):
     uhid: str
     post_surgery_details: PostSurgeryDetails
+
+class PasswordResetRequest(BaseModel):
+    uhid: str
+    new_password: str
