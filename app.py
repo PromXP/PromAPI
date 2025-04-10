@@ -1,5 +1,5 @@
 from typing import List
-from fastapi import  Body, FastAPI, HTTPException
+from fastapi import  Body, FastAPI, HTTPException, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
 from db import admin_lobby,doctor_lobby, fix_mongo_id, keep_server_alive, patient_data,notification_data, update_questionnaire_completion
 from models import Admin, Doctor, DoctorAssignRequest, GoogleLoginRequest, LoginRequest, MarkReadRequest, Notification, PasswordResetRequest, Patient, PostSurgeryDetailsUpdateRequest, QuestionnaireAppendRequest, QuestionnaireScoreAppendRequest, QuestionnaireUpdateRequest, SurgeryScheduleUpdateRequest
@@ -380,4 +380,22 @@ async def startup_event():
 @app.get("/")
 def read_root():
     return {"status": "alive"}
+
+active_connections = []
+
+@app.websocket("/ws/message")
+async def websocket_endpoint(websocket: WebSocket):
+    await websocket.accept()
+    active_connections.append(websocket)
+    try:
+        while True:
+            data = await websocket.receive_json()
+            print("Received:", data)
+
+            # Broadcast to all connected clients
+            for connection in active_connections:
+                await connection.send_json(data)
+    except WebSocketDisconnect:
+        print("Client disconnected")
+        active_connections.remove(websocket)
 
