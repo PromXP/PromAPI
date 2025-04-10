@@ -248,21 +248,22 @@ async def google_login(data: GoogleLoginRequest):
         doctor = await doctor_lobby.find_one({"email": email})
         if not doctor:
             raise HTTPException(status_code=404, detail="Doctor not found")
-        return {"role": "doctor", "data": fix_mongo_id(doctor)}
+        return {"message": "Login successful", "role": "doctor", "user": fix_mongo_id(doctor)}
 
     elif role == "admin":
         admin = await admin_lobby.find_one({"email": email})
         if not admin:
             raise HTTPException(status_code=404, detail="Admin not found")
-        return {"role": "admin", "data": fix_mongo_id(admin)}
+        return {"message": "Login successful", "role": "admin", "user": fix_mongo_id(admin)}
 
     elif role == "patient":
         patient = await patient_data.find_one({"email": email})
         if not patient:
             raise HTTPException(status_code=404, detail="Patient not found")
-        return {"role": "patient", "data": fix_mongo_id(patient)}
+        return {"message": "Login successful", "role": "patient", "user": fix_mongo_id(patient)}
 
     raise HTTPException(status_code=400, detail="Invalid role")
+
 
 @app.post("/login")
 async def login_user(request: LoginRequest):
