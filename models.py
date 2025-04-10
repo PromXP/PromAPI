@@ -17,6 +17,7 @@ class Doctor(BaseModel):
     gender: Literal["male", "female", "other"]
     age: int
     email: EmailStr
+    designation: str
     uhid : str
     phone_number : str
     password: str
@@ -31,6 +32,7 @@ class Doctor(BaseModel):
                 "age": 45,
                 "uhid" : "UH123456",
                 "admin_created": "APM",
+                "designation": "leg surgeon",
                 "phone_number": "1234567890",
                 "email": "dr.john@example.com",
                 "password": "securePass123",
@@ -72,7 +74,8 @@ class QuestionnaireUpdateRequest(BaseModel):
 class QuestionnaireAssigned(BaseModel):
     name: str
     period: str
-    timestamp: str
+    assigned_date: str
+    deadline: str
     completed: Literal[0, 1]
 
 class QuestionnaireScore(BaseModel):
@@ -109,6 +112,8 @@ class Patient(BaseModel):
     phone_number: str
     doctor_assigned: Optional[str] = None
     admin_assigned: Optional[str] = None
+    doctor_name: Optional[str] = None
+    admin_name: Optional[str] = None
     questionnaire_assigned: Optional[List[QuestionnaireAssigned]] = []
     questionnaire_scores: Optional[List[QuestionnaireScore]] = []
     surgery_scheduled: Optional[SurgeryScheduled] = None
@@ -133,17 +138,21 @@ class Patient(BaseModel):
                 "phone_number": "1234567890",
                 "doctor_assigned": "doctor_01",
                 "admin_assigned": "admin_01",
+                "doctor_name": "doctor_01",
+                "admin_name": "admin_01",
                 "questionnaire_assigned": [
                     {
                         "name": "Mobility Survey",
                         "period": "weekly",
-                        "timestamp": "2025-04-01T10:00:00",
+                        "assigned_date": "2025-04-01T10:00:00",
+                        "deadline": "2025-04-01T10:00:00",
                         "completed": 0
                     },
                     {
                         "name": "Pain Assessment",
                         "period": "daily",
-                        "timestamp": "2025-04-02T08:00:00",
+                        "assigned_date": "2025-04-02T08:00:00",
+                        "deadline": "2025-04-01T10:00:00",
                         "completed": 1
                     }
                 ],
