@@ -1,4 +1,4 @@
-from typing import Dict, List
+from typing import List
 from fastapi import  Body, FastAPI, HTTPException, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
 from db import admin_lobby,doctor_lobby, fix_mongo_id, keep_server_alive, patient_data,notification_data, update_questionnaire_completion
@@ -399,58 +399,5 @@ async def websocket_endpoint(websocket: WebSocket):
         print("Client disconnected")
         active_connections.remove(websocket)
 
-async def get_all_patients() -> List[Patient]:
-    cursor = patient_data.find()
-    patients = []
-    async for doc in cursor:
-        patients.append(Patient(**doc))
-    return patients
-
-periods = ["PRE OP", "3W", "6W", "3M", "6M", "1Y", "2Y"]
-questionnaire_keywords = {
-    "Oxford": "oks",
-    "Forgotten": "fjs",
-    "Ostheoarthritis": "koos",
-    "Society": "kss",
-    "SF-12": "sf12"
-}
 
 
-@app.get("/questionnaire-scores-detail")
-async def get_questionnaire_scores_detail() -> Dict[str, Dict[str, List[str]]]:
-    patients: List[Patient] = await get_all_patients()
-
-    # Prepare result structure
-    result = {
-        label: {period: [] for period in periods}
-        for label in questionnaire_keywords.values()
-    }
-
-    for patient in patients:
-        # Create empty score holder for this patient
-        scores_by_label_period = {
-            label: {period: [] for period in periods}
-            for label in questionnaire_keywords.values()
-        }
-
-        if patient.questionnaire_scores:
-            for score in patient.questionnaire_scores:
-                # Match by contains logic
-                matched_label = None
-                for keyword, label in questionnaire_keywords.items():
-                    if keyword in score.name:
-                        matched_label = label
-                        break
-
-                period_key = score.period.upper()
-
-                if matched_label and period_key in scores_by_label_period[matched_label]:
-                    scores_by_label_period[matched_label][period_key].append(str(score.score))
-
-        # Append patient scores as comma-separated string
-        for label in questionnaire_keywords.values():
-            for period in periods:
-                score_str = ",".join(scores_by_label_period[label][period])
-                result[label][period].append(score_str)
-
-    return result
