@@ -80,7 +80,7 @@ class QuestionnaireAssigned(BaseModel):
 
 class QuestionnaireScore(BaseModel):
     name: str
-    score: float
+    score: List[float]
     period: str
     timestamp: datetime
 
