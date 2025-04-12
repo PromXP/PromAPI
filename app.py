@@ -308,8 +308,6 @@ async def login_user(request: LoginRequest):
     if user["password"] != request.password:
         raise HTTPException(status_code=401, detail="Invalid password")
 
-    # Remove password before returning the user
-    user.pop("password", None)
     user["_id"] = str(user["_id"])  # convert ObjectId to str
 
     return {"message": "Login successful", "user": user}
