@@ -193,9 +193,26 @@ async def add_questionnaire(data: QuestionnaireAppendRequest):
     if not patient:
         raise HTTPException(status_code=404, detail="Patient not found")
 
+    # Get existing name-period pairs
+    existing_pairs = set(
+        (q["name"], q["period"])
+        for q in patient.get("questionnaire_assigned", [])
+    )
+
+    # Filter out duplicates from the request
+    new_questionnaires = [
+        q.dict()
+        for q in data.questionnaire_assigned
+        if (q.name, q.period) not in existing_pairs
+    ]
+
+    if not new_questionnaires:
+        return {"message": "No new questionnaire(s) to add"}
+
+    # Update the document
     result = await patient_data.update_one(
         {"uhid": data.uhid},
-        {"$push": {"questionnaire_assigned": {"$each": [q.dict() for q in data.questionnaire_assigned]}}}
+        {"$push": {"questionnaire_assigned": {"$each": new_questionnaires}}}
     )
 
     if result.modified_count:
