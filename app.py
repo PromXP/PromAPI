@@ -372,6 +372,33 @@ async def reset_password(data: PasswordResetRequest):
     )
     return {"message": "Password updated successfully"}
 
+@app.put("/doctors/reset-password")
+async def reset_doctor_password(data: PasswordResetRequest):
+    doctor = await doctor_lobby.find_one({"uhid": data.uhid})  # Find doctor using uhid
+    if not doctor:
+        raise HTTPException(status_code=404, detail="Doctor not found")
+
+    # Optionally, hash the password before saving it (use a hash function if necessary)
+    await doctor_lobby.update_one(
+        {"uhid": data.uhid},
+        {"$set": {"password": data.new_password}}  # Store the new password
+    )
+    return {"message": "Doctor's password updated successfully"}
+
+@app.put("/admins/reset-password")
+async def reset_admin_password(data: PasswordResetRequest):
+    admin = await admin_lobby.find_one({"uhid": data.uhid})  # Find admin using uhid
+    if not admin:
+        raise HTTPException(status_code=404, detail="Admin not found")
+
+    # Optionally, hash the password before saving it (use a hash function if necessary)
+    await admin_lobby.update_one(
+        {"uhid": data.uhid},
+        {"$set": {"password": data.new_password}}  # Store the new password
+    )
+    return {"message": "Admin's password updated successfully"}
+
+
 
 @app.on_event("startup")
 async def startup_event():
