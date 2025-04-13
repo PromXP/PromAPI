@@ -340,13 +340,13 @@ async def get_patients_by_admin(admin_email: str):
 
     return patients
 
-@app.get("/doctors/by-admin/{admin_email}", response_model=List[Doctor])
-async def get_doctors_by_admin(admin_email: str):
-    doctors_cursor = doctor_lobby.find({"admin_created": admin_email})
+@app.get("/getalldoctors", response_model=List[Doctor])
+async def get_all_doctors():
+    doctors_cursor = doctor_lobby.find()  # No filter, fetch all doctors
     doctors = await doctors_cursor.to_list(length=None)
 
     if not doctors:
-        raise HTTPException(status_code=404, detail="No doctors found for this admin")
+        raise HTTPException(status_code=404, detail="No doctors found")
 
     return doctors
 
@@ -356,7 +356,7 @@ async def get_patients_by_doctor(doctor_email: str):
     patients = await patients_cursor.to_list(length=None)
 
     if not patients:
-        raise HTTPException(status_code=404, detail="No patients found for this admin")
+        raise HTTPException(status_code=404, detail="No patients found for this doctor")
 
     return patients
 
