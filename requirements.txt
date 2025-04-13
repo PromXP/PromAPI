@@ -22,6 +22,7 @@ pymongo==4.5.0
 pywin32-ctypes==0.2.2
 railroad==0.5.0
 redis==5.2.1
+resend==2.7.0
 Sphinx==8.2.3
 thread==2.0.5
 trove_classifiers==2025.3.19.19
