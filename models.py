@@ -20,6 +20,7 @@ class Doctor(BaseModel):
     designation: str
     uhid : str
     phone_number : str
+    blood_group: str
     password: str
     admin_created: str
     patients_assigned: List[str] = []
@@ -34,6 +35,7 @@ class Doctor(BaseModel):
                 "admin_created": "APM",
                 "designation": "leg surgeon",
                 "phone_number": "1234567890",
+                "blood_group": "A+",
                 "email": "dr.john@example.com",
                 "password": "securePass123",
                 "patients_assigned": ["patient_id_1", "patient_id_2"]
