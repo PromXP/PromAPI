@@ -244,3 +244,8 @@ class PostSurgeryDetailsUpdateRequest(BaseModel):
 class PasswordResetRequest(BaseModel):
     uhid: str
     new_password: str
+
+class EmailRequest(BaseModel):
+    email: str
+    subject: str
+    message: str

@@ -1,10 +1,11 @@
-from typing import List
-from fastapi import  Body, FastAPI, HTTPException, WebSocket, WebSocketDisconnect
+from typing import Dict, List
+from fastapi import  BackgroundTasks, Body, FastAPI, HTTPException, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
-from db import admin_lobby,doctor_lobby, fix_mongo_id, keep_server_alive, patient_data,notification_data, update_questionnaire_completion
-from models import Admin, Doctor, DoctorAssignRequest, GoogleLoginRequest, LoginRequest, MarkReadRequest, Notification, PasswordResetRequest, Patient, PostSurgeryDetailsUpdateRequest, QuestionnaireAppendRequest, QuestionnaireScoreAppendRequest, QuestionnaireUpdateRequest, SurgeryScheduleUpdateRequest
+from db import admin_lobby,doctor_lobby, fix_mongo_id, keep_server_alive, patient_data,notification_data, send_email_task, update_questionnaire_completion
+from models import Admin, Doctor, DoctorAssignRequest, EmailRequest, GoogleLoginRequest, LoginRequest, MarkReadRequest, Notification, PasswordResetRequest, Patient, PostSurgeryDetailsUpdateRequest, QuestionnaireAppendRequest, QuestionnaireScoreAppendRequest, QuestionnaireUpdateRequest, SurgeryScheduleUpdateRequest
 from datetime import date, datetime
 import asyncio
+import resend
 
 app = FastAPI()
 
@@ -442,4 +443,16 @@ async def websocket_endpoint(websocket: WebSocket):
         active_connections.remove(websocket)
 
 
+@app.post("/send/")
+async def send_email(email_request: EmailRequest, background_tasks: BackgroundTasks):
+    try:
+        email = email_request.email
+        subject = email_request.subject
+        message = email_request.message
 
+        # Add email sending task to background
+        background_tasks.add_task(send_email_task, email, subject, message)
+        
+        return {"status": "success", "message": "Email sending initiated"}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
