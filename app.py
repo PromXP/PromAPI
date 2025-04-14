@@ -39,10 +39,16 @@ async def register_admin(admin: Admin):
 
 @app.post("/registerdoctor")
 async def register_doctor(doctor: Doctor):
-    # Check if doctor already exists
-    existing_doctor = await doctor_lobby.find_one({"email": doctor.email})
-    if existing_doctor:
-        raise HTTPException(status_code=400, detail="Doctor with this email already exists.")
+    # Check if a doctor with same email, UHID, or phone number already exists
+    existing = await doctor_lobby.find_one({
+        "$or": [
+            {"email": doctor.email},
+            {"uhid": doctor.uhid},
+            {"phone_number": doctor.phone_number}
+        ]
+    })
+    if existing:
+        raise HTTPException(status_code=400, detail="Doctor with this UHID or email or phone number already exists.")
 
     # Check if the admin who created this doctor exists
     admin = await admin_lobby.find_one({"email": doctor.admin_created})
@@ -56,13 +62,14 @@ async def register_doctor(doctor: Doctor):
     # Update admin's 'doctors_created' list with the new doctor's email or ID
     await admin_lobby.update_one(
         {"email": doctor.admin_created},
-        {"$push": {"doctors_created": doctor.email}}  # or str(result.inserted_id) if using _id
+        {"$push": {"doctors_created": doctor.email}}  # or str(result.inserted_id) if preferred
     )
 
     return {
         "message": "Doctor registered successfully.",
         "doctor_id": str(result.inserted_id)
     }
+
 
 @app.post("/registerpatient")
 async def register_patient(patient: Patient):
