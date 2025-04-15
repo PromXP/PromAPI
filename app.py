@@ -217,15 +217,27 @@ async def add_questionnaire(data: QuestionnaireAppendRequest):
     if not new_questionnaires:
         return {"message": "No new questionnaire(s) to add"}
 
+    # Optionally: pick latest period, or use the period of the first new questionnaire
+    # If multiple questionnaires have different periods, you can choose how to handle
+    new_status = new_questionnaires[0]["period"]  # For example, use the first one
+
     # Update the document
     result = await patient_data.update_one(
         {"uhid": data.uhid},
-        {"$push": {"questionnaire_assigned": {"$each": new_questionnaires}}}
+        {
+            "$push": {"questionnaire_assigned": {"$each": new_questionnaires}},
+            "$set": {"current_status": new_status}
+        }
     )
 
     if result.modified_count:
-        return {"message": "Questionnaire(s) added successfully"}
+        return {
+            "message": "Questionnaire(s) added successfully and current_status updated",
+            "updated_status": new_status
+        }
+
     return {"message": "No changes made"}
+
 
 @app.put("/add-questionnaire-scores")
 async def add_questionnaire_scores(data: QuestionnaireScoreAppendRequest):
